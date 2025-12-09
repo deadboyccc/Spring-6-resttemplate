@@ -24,8 +24,8 @@ class BeerClientImplTest {
     @Test
     void listBeers() {
         var beers = beerClient.listBeers();
-
         log.debug("Beers: {}", beers.getContent());
+
 
     }
 }
