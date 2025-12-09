@@ -24,7 +24,6 @@ public class BeerClientImpl implements BeerClient {
         log.info("Status Code: {}", responseEntity.getStatusCode());
         log.debug("Response Body: {}", responseEntity.getBody());
 
-        // TODO: Parse the JSON response and convert to Page<BeerDTO>
-        return null;
+        return Page.empty();
     }
 }
