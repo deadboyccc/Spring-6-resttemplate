@@ -1,6 +1,8 @@
 package dev.dead.spring6resttemplate.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import dev.dead.spring6resttemplate.models.BeerDTO;
+import dev.dead.spring6resttemplate.models.BeerDTOPageImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -26,12 +28,20 @@ public class BeerClientImpl implements BeerClient {
                 String.class);
         ResponseEntity<Map> responseEntityMap = restTemplate.getForEntity(BASE_URL + GET_BEER_PATH, Map.class);
         assert responseEntityMap.getBody() != null;
+        ResponseEntity<JsonNode> responseEntityJsonNode = restTemplate.getForEntity(BASE_URL + GET_BEER_PATH, JsonNode.class);
+        assert responseEntityJsonNode.getBody() != null;
+        responseEntityJsonNode.getBody()
+                .findPath("content")
+                .forEach(node -> log.debug("Node Beer Name: {}", node.get("beerName")
+                        .asText()));
         log.debug("Response Entity Map: {}", responseEntityMap.getBody()
                 .size());
 
 
         log.info("Status Code: {}", responseEntity.getStatusCode());
         log.debug("Response Body: {}", responseEntity.getBody());
+        ResponseEntity<BeerDTOPageImpl> pageResponseEntity =
+                restTemplate.getForEntity(BASE_URL + GET_BEER_PATH, BeerDTOPageImpl.class);
 
         return Page.empty();
     }
