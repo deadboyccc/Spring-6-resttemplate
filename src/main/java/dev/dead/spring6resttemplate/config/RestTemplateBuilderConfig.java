@@ -7,9 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-/**
- * Created by jt, Spring Framework Guru.
- */
 @Configuration
 public class RestTemplateBuilderConfig {
 

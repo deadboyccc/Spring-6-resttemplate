@@ -1,6 +1,5 @@
 package dev.dead.spring6resttemplate.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import dev.dead.spring6resttemplate.models.BeerDTO;
 import dev.dead.spring6resttemplate.models.BeerDTOPageImpl;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @RequiredArgsConstructor
@@ -23,25 +21,9 @@ public class BeerClientImpl implements BeerClient {
     @Override
     public Page<BeerDTO> listBeers() {
         RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(GET_BEER_PATH,
-                String.class);
-        ResponseEntity<Map> responseEntityMap = restTemplate.getForEntity(GET_BEER_PATH, Map.class);
-        assert responseEntityMap.getBody() != null;
-        ResponseEntity<JsonNode> responseEntityJsonNode = restTemplate.getForEntity(GET_BEER_PATH, JsonNode.class);
-        assert responseEntityJsonNode.getBody() != null;
-        responseEntityJsonNode.getBody()
-                .findPath("content")
-                .forEach(node -> log.debug("Node Beer Name: {}", node.get("beerName")
-                        .asText()));
-        log.debug("Response Entity Map: {}", responseEntityMap.getBody()
-                .size());
-
-
-        log.info("Status Code: {}", responseEntity.getStatusCode());
-        log.debug("Response Body: {}", responseEntity.getBody());
-        ResponseEntity<BeerDTOPageImpl> pageResponseEntity =
-                restTemplate.getForEntity(GET_BEER_PATH, BeerDTOPageImpl.class);
-
-        return Page.empty();
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath(GET_BEER_PATH);
+        ResponseEntity<BeerDTOPageImpl> responseEntity = restTemplate.getForEntity(uriComponentsBuilder.toUriString()
+                , BeerDTOPageImpl.class);
+        return responseEntity.getBody();
     }
 }
