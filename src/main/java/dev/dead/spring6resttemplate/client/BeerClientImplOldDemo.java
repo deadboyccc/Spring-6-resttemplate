@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
-public class BeerClientImplOldDemo implements BeerClient {
+public abstract class BeerClientImplOldDemo implements BeerClient {
     private final RestTemplateBuilder restTemplateBuilder;
     private final String GET_BEER_PATH = "/api/v1/beer";
 

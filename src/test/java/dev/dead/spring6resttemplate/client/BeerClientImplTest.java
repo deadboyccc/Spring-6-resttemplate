@@ -22,6 +22,17 @@ class BeerClientImplTest {
     }
 
     @Test
+    void getBeerById() {
+        var beers = beerClient.listBeers();
+        var beer = beerClient.getBeerById(beers.getContent()
+                .getFirst()
+                .getId());
+        assert beer != null;
+        log.debug("Beer: {}", beer);
+
+    }
+
+    @Test
     void listBeers() {
         var beers = beerClient.listBeers();
         log.debug("Beers: {}", beers.getSize());
