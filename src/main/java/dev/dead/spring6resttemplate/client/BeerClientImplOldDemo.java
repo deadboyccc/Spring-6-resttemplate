@@ -3,6 +3,7 @@ package dev.dead.spring6resttemplate.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import dev.dead.spring6resttemplate.models.BeerDTO;
 import dev.dead.spring6resttemplate.models.BeerDTOPageImpl;
+import dev.dead.spring6resttemplate.models.BeerStyle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -20,6 +21,12 @@ public class BeerClientImplOldDemo implements BeerClient {
 
     @Override
     public Page<BeerDTO> listBeers() {
+        return this.listBeers(null, null, null, null, null);
+    }
+
+    @Override
+    public Page<BeerDTO> listBeers(String beerName, BeerStyle beerStyle, Boolean showInventory, Integer pageNumber,
+                                   Integer pageSize) {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(GET_BEER_PATH,
                 String.class);

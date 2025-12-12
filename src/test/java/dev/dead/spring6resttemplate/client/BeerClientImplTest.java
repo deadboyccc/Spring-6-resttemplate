@@ -24,8 +24,13 @@ class BeerClientImplTest {
     @Test
     void listBeers() {
         var beers = beerClient.listBeers();
-        log.debug("Beers: {}", beers.getContent());
+        log.debug("Beers: {}", beers.getSize());
+    }
 
+    @Test
+    void listBeersWithBeerNameQueryParam() {
+        var beers = beerClient.listBeers("ALE", null, null, null, null);
+        log.debug("Beers: {}", beers.getSize());
 
     }
 }
