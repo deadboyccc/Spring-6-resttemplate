@@ -14,4 +14,9 @@ public interface BeerClient {
                             Integer pageSize);
 
     BeerDTO createBeer(BeerDTO beerDTO);
+
+    BeerDTO updateBeer(UUID beerId, BeerDTO beerDTO);
+
+    void deleteBeer(UUID beerId);
+
 }

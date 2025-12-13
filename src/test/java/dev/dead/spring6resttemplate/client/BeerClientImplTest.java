@@ -8,8 +8,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.web.client.HttpClientErrorException;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import java.math.BigDecimal;
 
 @Slf4j
@@ -27,7 +33,35 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Rollback
+    void deleteBeer() {
+        var beers = beerClient.listBeers();
+        beerClient.deleteBeer(beers.getContent()
+                .getFirst()
+                .getId());
+        assertThrows(HttpClientErrorException.class, () -> beerClient.getBeerById(beers.getContent()
+                .getFirst()
+                .getId()));
+
+        log.debug("Beer Deleted");
+
+    }
+
+    @Test
+    void testUpdateBeer() {
+        var beers = beerClient.listBeers();
+        var beer = beerClient.getBeerById(beers.getContent()
+                .getFirst()
+                .getId());
+        assert beer != null;
+        log.debug("Original Beer: {}", beer);
+        beer.setBeerName("Updated Beer Name");
+        var updatedBeer = beerClient.updateBeer(beer.getId(), beer);
+        assert updatedBeer.getBeerName()
+                .equals("Updated Beer Name");
+        log.debug("Updated Beer: {}", updatedBeer);
+    }
+
+    @Test
     void testCreateBeer() {
         BeerDTO beerDTO =
                 BeerDTO.builder()
