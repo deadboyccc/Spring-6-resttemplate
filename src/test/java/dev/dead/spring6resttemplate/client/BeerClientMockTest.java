@@ -6,6 +6,7 @@ import dev.dead.spring6resttemplate.config.RestTemplateBuilderConfig;
 import dev.dead.spring6resttemplate.models.BeerDTO;
 import dev.dead.spring6resttemplate.models.BeerDTOPageImpl;
 import dev.dead.spring6resttemplate.models.BeerStyle;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +20,21 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URL;
 import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withAccepted;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+@Slf4j
 @RestClientTest
 @Import(RestTemplateBuilderConfig.class)
 public class BeerClientMockTest {
@@ -48,8 +53,12 @@ public class BeerClientMockTest {
 
     RestTemplate restTemplate;
 
+    BeerDTO dto;
+    String dtoJson;
+
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws JsonProcessingException {
         MockServerRestTemplateCustomizer customizer = new MockServerRestTemplateCustomizer();
         RestTemplateBuilder builder = new RestTemplateBuilder(customizer).rootUri(URL);
         restTemplate = builder.build();
@@ -57,6 +66,51 @@ public class BeerClientMockTest {
 
         when(mockRestTemplateBuilder.build()).thenReturn(restTemplate);
         beerClient = new BeerClientImpl(mockRestTemplateBuilder);
+
+        dto = getBeerDto();
+        dtoJson = objectMapper.writeValueAsString(dto);
+    }
+
+    @Test
+    void testCreateBeer() {
+        URI uri =
+                UriComponentsBuilder.fromPath(BeerClientImpl.GET_BEER_BY_ID_PATH)
+                        .build(dto.getId());
+        log.debug("URI: {}", uri);
+
+        server.expect(method(HttpMethod.POST))
+                .andExpect(requestTo(BeerClientImpl.GET_BEER_PATH))
+                .andRespond(withAccepted().location(uri));
+
+        server.expect(method(HttpMethod.GET))
+                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withSuccess(dtoJson, MediaType.APPLICATION_JSON));
+
+        var createdDto = beerClient.createBeer(dto);
+        log.debug("Created Beer: {}", createdDto);
+        assertThat(createdDto).isNotNull();
+        assertThat(createdDto.getId()).isEqualTo(dto.getId());
+        assertThat(createdDto.getPrice()).isEqualTo(dto.getPrice());
+        assertThat(createdDto.getBeerName()).isEqualTo(dto.getBeerName());
+        assertThat(createdDto.getBeerStyle()).isEqualTo(dto.getBeerStyle());
+        assertThat(createdDto.getQuantityOnHand()).isEqualTo(dto.getQuantityOnHand());
+        assertThat(createdDto.getUpc()).isEqualTo(dto.getUpc());
+
+
+    }
+
+    @Test
+    void testGetBeerById() {
+
+        server.expect(method(HttpMethod.GET))
+                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withSuccess(dtoJson,
+                        MediaType.APPLICATION_JSON));
+
+        var response = beerClient.getBeerById(dto.getId());
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(dto.getId());
+
     }
 
     @Test
