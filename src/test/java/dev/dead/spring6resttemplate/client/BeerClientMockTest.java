@@ -73,6 +73,42 @@ public class BeerClientMockTest {
     }
 
     @Test
+    void testListbeersWithQueryParam() throws JsonProcessingException {
+        String responsePage = objectMapper.writeValueAsString(getPage());
+        URI uri = UriComponentsBuilder.fromPath(BeerClientImpl.GET_BEER_PATH)
+                .queryParam("beerName", "ALE")
+                .build()
+                .toUri();
+        server.expect(method(HttpMethod.GET))
+                .andExpect(requestTo(uri))
+                .andRespond(withSuccess(responsePage, MediaType.APPLICATION_JSON));
+        var res = beerClient.listBeers("ALE", null, null, null, null);
+        assertThat(res.getContent()
+                .size()).isGreaterThan(0);
+    }
+
+    @Test
+    void testGetBeerByIdNotFound() {
+
+        server.expect(method(HttpMethod.GET))
+                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withResourceNotFound());
+        assertThrows(HttpClientErrorException.NotFound.class, () -> beerClient.getBeerById(dto.getId()));
+        server.verify();
+    }
+
+    @Test
+    void testDeleteBeerByIdNotFound() {
+        server.expect(method(HttpMethod.DELETE))
+                .andExpect(requestToUriTemplate(
+                        BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()
+                ))
+                .andRespond(withResourceNotFound());
+        assertThrows(HttpClientErrorException.NotFound.class, () -> beerClient.deleteBeer(dto.getId()));
+        server.verify();
+    }
+
+    @Test
     void testDeleteBeerById() {
         server.expect(method(HttpMethod.DELETE))
                 .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
