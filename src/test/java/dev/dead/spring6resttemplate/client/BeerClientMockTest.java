@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -29,10 +30,10 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withAccepted;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 @Slf4j
 @RestClientTest
@@ -72,6 +73,29 @@ public class BeerClientMockTest {
     }
 
     @Test
+    void testDeleteBeerById() {
+        server.expect(method(HttpMethod.DELETE))
+                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withNoContent());
+        beerClient.deleteBeer(dto.getId());
+        server.verify();
+    }
+
+    @Test
+    void testUpdateBeerById() {
+
+        server.expect(method(HttpMethod.PUT))
+                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withSuccess(dtoJson, MediaType.APPLICATION_JSON));
+        mockGetOperation();
+        var updatedDto = beerClient.updateBeer(dto.getId(), dto);
+        assertThat(updatedDto).isNotNull();
+        assertThat(updatedDto.getId()).isEqualTo(dto.getId());
+
+
+    }
+
+    @Test
     void testCreateBeer() {
         URI uri =
                 UriComponentsBuilder.fromPath(BeerClientImpl.GET_BEER_BY_ID_PATH)
@@ -82,9 +106,7 @@ public class BeerClientMockTest {
                 .andExpect(requestTo(BeerClientImpl.GET_BEER_PATH))
                 .andRespond(withAccepted().location(uri));
 
-        server.expect(method(HttpMethod.GET))
-                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
-                .andRespond(withSuccess(dtoJson, MediaType.APPLICATION_JSON));
+        mockGetOperation();
 
         var createdDto = beerClient.createBeer(dto);
         log.debug("Created Beer: {}", createdDto);
@@ -99,13 +121,16 @@ public class BeerClientMockTest {
 
     }
 
+    private void mockGetOperation() {
+        server.expect(method(HttpMethod.GET))
+                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
+                .andRespond(withSuccess(dtoJson, MediaType.APPLICATION_JSON));
+    }
+
     @Test
     void testGetBeerById() {
 
-        server.expect(method(HttpMethod.GET))
-                .andExpect(requestToUriTemplate(BeerClientImpl.GET_BEER_BY_ID_PATH, dto.getId()))
-                .andRespond(withSuccess(dtoJson,
-                        MediaType.APPLICATION_JSON));
+        mockGetOperation();
 
         var response = beerClient.getBeerById(dto.getId());
         assertThat(response).isNotNull();
