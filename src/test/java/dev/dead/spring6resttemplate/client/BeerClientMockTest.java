@@ -61,7 +61,9 @@ public class BeerClientMockTest {
     @BeforeEach
     void setUp() throws JsonProcessingException {
         MockServerRestTemplateCustomizer customizer = new MockServerRestTemplateCustomizer();
-        RestTemplateBuilder builder = new RestTemplateBuilder(customizer).rootUri(URL);
+        RestTemplateBuilder builder = mockRestTemplateBuilder
+                .rootUri(URL);
+
         restTemplate = builder.build();
         server = customizer.getServer();
 

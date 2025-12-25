@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -44,7 +45,8 @@ public class BeerClientImpl implements BeerClient {
         URI uri =
                 restTemplate.postForLocation(GET_BEER_PATH,
                         beerDTO);
-        return this.getBeerById(UUID.fromString(uri.getPath()
+        return this.getBeerById(UUID.fromString(Objects.requireNonNull(uri)
+                .getPath()
                 .split("/")[4]));
     }
 
